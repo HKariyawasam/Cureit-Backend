@@ -60,4 +60,8 @@ let tasks = require('./routes/TaskRoutes')
 app.use('/api/v1/tasks', tasks);
 app.use(errors.errorHandler);
 
+//task completions route
+let completions = require('./routes/CompletionRoutes')
+app.use('/api/v1/completions', completions);
+app.use(errors.errorHandler);
 
