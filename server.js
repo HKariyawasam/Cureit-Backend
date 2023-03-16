@@ -46,8 +46,8 @@ app.use('/api/v1/users', users);
 app.use(errors.errorHandler);
 
 //activity route
-let activities = require('./routes/ActivityRoutes')
-app.use('/api/v1/activities', activities);
+let activity = require('./routes/ActivityRoutes')
+app.use('/api/v1/activities', activity);
 app.use(errors.errorHandler);
 
 //schedules route

@@ -12,6 +12,7 @@ const create = async (req, res) => {
   const endTime = req.body.endTime;
   const duration = req.body.duration;
   const activityID = req.body.activityID;
+  const activityName = req.body.activityName;
   
   const task = new Task({
     taskID,
@@ -21,13 +22,15 @@ const create = async (req, res) => {
     startTime,
     endTime,
     duration,
-    activityID
+    activityID,
+    activityName
   });
 
   try {
     let response = await task.save();
+
     if (response) {
-      return res.status(201).send({ message: "Task added to schedule" });
+      return res.status(201).send(response._id);
     } else {
       return res.status(500).send({ message: "Internal server error" });
     }
@@ -87,16 +90,33 @@ const getTaskById = async (req, res) => {
     const taskID = req.params.taskID;
 
     try {
-        const user = await Task.findOneAndDelete({ taskID: taskID });
+        const user = await Task.findByIdAndDelete({ _id: taskID });
         if (user) {
-            return res.status(204).send({ message: 'Successfully deleted task' });
+            return res.status(204).send('Successfully deleted task');
         } else {
-            return res.status(404).send({ message: 'No such task available' });
+            return res.status(404).send('No such task available');
         }
 
     } catch (err) {
-        return res.status(500).send({ message: 'Internal Server Error' })
+        return res.status(500).send('Internal Server Error')
     }
+
+}
+
+const deleteTaskByTaskId = async (req, res) => {
+  const taskID = req.params.taskID;
+
+  try {
+      const user = await Task.findOneAndDelete({ taskID: taskID });
+      if (user) {
+          return res.status(204).send('Successfully deleted task');
+      } else {
+          return res.status(404).send('No such task available');
+      }
+
+  } catch (err) {
+      return res.status(500).send('Internal Server Error')
+  }
 
 }
 
@@ -108,4 +128,5 @@ const getTaskById = async (req, res) => {
     getTaskById,
     updateTask,
     deleteTask,
+    deleteTaskByTaskId
   };

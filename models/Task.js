@@ -27,6 +27,9 @@ const TaskSchema = new Schema({
     activityID: {
         type: String,
     },
+    activityName: {
+        type: String,
+    }
 
    
 });

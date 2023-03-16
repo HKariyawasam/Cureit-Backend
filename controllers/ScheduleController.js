@@ -17,17 +17,25 @@ const create = async (req, res) => {
     tasks,
   });
 
+
   try {
-    let response = await schedule.save();
-    if (response) {
-      return res.status(201).send({ message: "Schedule is created" });
+    let scheduleVal = await Schedule.findOne({
+      scheduleID: scheduleID,
+    });
+    if (scheduleVal) {
+      return res.status(200).send({ data: "A Schedule already exist" });
     } else {
-      return res.status(500).send({ message: "Internal server error" });
+      let response = await schedule.save();
+    if (response) {
+      return res.status(201).send({ data: "Schedule is created" });
+    } else {
+      return res.status(500).send({ data: "Internal server error" });
+    }
     }
   } catch (err) {
-    console.log(err);
-    return res.status(400).send({ message: "Error while creating schedule" });
+    return res.status(500).send({ data: "Internal Server Error" });
   }
+
 };
 
 const getAllScheduleUser = async (req, res) => {
@@ -109,9 +117,9 @@ const updateSchedule = async (req, res) => {
         if (response) {
           return res
             .status(200)
-            .send({ message: "Successfully updated Schedule Details" });
+            .send("Successfully updated Schedule Details");
         } else {
-          return res.status(500).send({ message: "Internal server error" });
+          return res.status(500).send("Internal server error" );
         }
       } else {
         var durationTotal = 0;
@@ -128,19 +136,18 @@ const updateSchedule = async (req, res) => {
         console.log("HEREEE",durationTotal)
         if (durationTotal >= 20) {
         
-          return res.status(404).send({
-            message: "You are exceeding allocated duration",
-          });
+          return res.status(404).send(
+            "You are exceeding allocated duration for daily schedule"
+          );
         } else {
           console.log("HEREEE")
-          let newDuration = durationTotal + incomingTask.duration;
+          let newDuration = parseInt(durationTotal) + parseInt(incomingTask.duration);
           
           let dueVal = 20 - durationTotal;
 
+
           if(newDuration>20){
-            return res.status(404).send({
-              message: `Your task must be only of ${dueVal} mins`,
-            });
+            return res.status(404).send(`You only have ${dueVal} mins remaining in schedule`);
           }else{
             tasksArray.push(incomingTask.taskID);
             const newSchedule = {
@@ -156,9 +163,9 @@ const updateSchedule = async (req, res) => {
             if (response) {
               return res
                 .status(200)
-                .send({ message: "Successfully updated Schedule Details" });
+                .send("Successfully updated Schedule Details" );
             } else {
-              return res.status(500).send({ message: "Internal server error" });
+              return res.status(500).send( "Internal server error");
             }
           }
 
@@ -173,10 +180,163 @@ const updateSchedule = async (req, res) => {
   }
 };
 
+
+
+const updateScheduleWithUpdateTask = async (req, res) => {
+  const scheduleID = req.params.scheduleID;
+
+  const incomingTask = req.body;
+
+  try {
+    let schedule = await Schedule.findOne({
+      scheduleID: scheduleID,
+    });
+    if (schedule) {
+      let tasksArray = schedule.tasks; 
+      let tempTaskArray = [];
+      
+      tasksArray.filter((task)=>{
+        if(task != incomingTask.taskID){
+          tempTaskArray.push(task)
+        }
+      })
+      //retrieve tasks array from the schedule
+
+
+      if (tempTaskArray.length == 0) {
+        tempTaskArray.push(incomingTask.taskID);
+        const newSchedule = {
+          scheduleID: req.body.scheduleID,
+          date: req.body.date,
+          userID: req.body.userID,
+          tasks: tempTaskArray,
+        };
+        const response = await Schedule.findOneAndUpdate(
+          { scheduleID: scheduleID },
+          newSchedule
+        );
+        if (response) {
+          return res
+            .status(200)
+            .send("Successfully updated Schedule Details");
+        } else {
+          return res.status(500).send("Internal server error" );
+        }
+      } else {
+        var durationTotal = 0;
+
+        await Promise.all(tempTaskArray.map(async (task) => {
+          let taskObj = await Task.findOne({ taskID: task });
+          if (taskObj) {
+            durationTotal = durationTotal + parseInt(taskObj.duration);
+          
+          }
+        }))
+
+
+        console.log("HEREEE",durationTotal)
+        if (durationTotal >= 20) {
+        
+          return res.status(404).send(
+            "You are exceeding allocated duration for daily schedule"
+          );
+        } else {
+          console.log("HEREEE")
+          let newDuration = parseInt(durationTotal) + parseInt(incomingTask.duration);
+          
+          let dueVal = 20 - durationTotal;
+
+
+          if(newDuration>20){
+            return res.status(404).send(`You only have ${dueVal} mins remaining in schedule`);
+          }else{
+            tempTaskArray.push(incomingTask.taskID);
+            const newSchedule = {
+              scheduleID: req.body.scheduleID,
+              date: req.body.date,
+              userID: req.body.userID,
+              tasks: tempTaskArray,
+            };
+            const response = await Schedule.findOneAndUpdate(
+              { scheduleID: scheduleID },
+              newSchedule
+            );
+            if (response) {
+              return res
+                .status(200)
+                .send("Successfully updated Schedule Details" );
+            } else {
+              return res.status(500).send( "Internal server error");
+            }
+          }
+
+          
+          
+         
+        }
+      }
+    }
+  } catch (err) {
+    return res.status(500).send({ message: "Internal Server Error" });
+  }
+};
+
+
+const updateScheduleWithTaskDelete = async (req, res) => {
+  const scheduleID = req.params.scheduleID;
+
+  const incomingTaskID = req.params.taskID;
+
+  try {
+    let schedule = await Schedule.findOne({
+      scheduleID: scheduleID,
+    });
+    if (schedule) {
+      let tasksArray = schedule.tasks; 
+
+      let tempTaskArray = [];
+
+      tasksArray.forEach(task=>{
+        if(task !== incomingTaskID){
+          tempTaskArray.push(task)
+        }
+      
+      })
+
+
+
+      const updatedSchedule = {
+        scheduleID:schedule.scheduleID,
+        date:schedule.date,
+        userID:schedule.userID,
+        tasks:tempTaskArray
+      }
+
+      const response = await Schedule.findOneAndUpdate(
+        { scheduleID: scheduleID },
+        updatedSchedule
+      );
+      if (response) {
+        return res
+          .status(200)
+          .send("Successfully updated Schedule Details" );
+      } else {
+        return res.status(500).send( "Internal server error");
+      }
+      
+    
+    }
+  } catch (err) {
+    return res.status(500).send({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   create,
   getAllScheduleUser,
   getOneUserSchedulePerDate,
   searchSchedule,
   updateSchedule,
+  updateScheduleWithUpdateTask,
+  updateScheduleWithTaskDelete
 };
