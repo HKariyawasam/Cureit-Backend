@@ -23,7 +23,8 @@ const create = async (req, res) => {
     endTime,
     duration,
     activityID,
-    activityName
+    activityName,
+    complete_score:1
   });
 
   try {
@@ -67,7 +68,8 @@ const getTaskById = async (req, res) => {
         startTime:req.body.startTime,
         endTime:req.body.endTime,
         duration:req.body.duration,
-        activityID:req.body.activityID
+        activityID:req.body.activityID,
+        complete_score:1
     };
    
     try {
@@ -75,14 +77,14 @@ const getTaskById = async (req, res) => {
       if (response) {
         return res
           .status(200)
-          .send({ message: "Successfully updated Task Details" });
+          .send("Successfully updated Task Details" );
       } else {
-        return res.status(500).send({ message: "Internal server error" });
+        return res.status(500).send("Internal server error");
       }
     } catch (err) {
       return res
         .status(400)
-        .send({ message: "Unable to update" });
+        .send("Unable to update");
     }
   };
 
@@ -120,6 +122,41 @@ const deleteTaskByTaskId = async (req, res) => {
 
 }
 
+
+const updateTaskForCompletionScore = async (req, res) => {
+  const taskID = req.params.taskID; 
+  const score = req.params.score; 
+
+  const task = await Task.findOne({ taskID: taskID });
+
+  const newTask = {
+      taskID:task.taskID,
+      scheduleID:task.scheduleID,
+      userID:task.userID,
+      date:task.date,
+      startTime:task.startTime,
+      endTime:task.endTime,
+      duration:task.duration,
+      activityID:task.activityID,
+      complete_score:score
+  };
+ 
+  try {
+    const response = await Task.findOneAndUpdate({ taskID: taskID }, newTask);
+    if (response) {
+      return res
+        .status(200)
+        .send("Successfully updated Task Details");
+    } else {
+      return res.status(500).send("Internal server error");
+    }
+  } catch (err) {
+    return res
+      .status(400)
+      .send("Unable to update");
+  }
+};
+
   
 
 
@@ -128,5 +165,6 @@ const deleteTaskByTaskId = async (req, res) => {
     getTaskById,
     updateTask,
     deleteTask,
-    deleteTaskByTaskId
+    deleteTaskByTaskId,
+    updateTaskForCompletionScore
   };

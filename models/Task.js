@@ -29,6 +29,9 @@ const TaskSchema = new Schema({
     },
     activityName: {
         type: String,
+    },
+    complete_score:{
+        type: Number
     }
 
    

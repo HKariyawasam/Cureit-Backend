@@ -8,7 +8,7 @@ const auth = require('./middlewares/jwt');
 const errors = require('./middlewares/errorHandler')
 
 
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 4002;
 const URL = process.env.URL;
 
 app.use(express.urlencoded({ extended: false }))

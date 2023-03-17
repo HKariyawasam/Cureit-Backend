@@ -110,7 +110,7 @@ const lastPausedActivity = async (req, res) => {
     const userID = req.params.userID;
 
     try {
-        const pausedTasks = await Completion.find({ userID: userID, complete_score:2 });
+        const pausedTasks = await Completion.findOne({ userID: userID, complete_score:2 });
         if (pausedTasks) {
             return res.json(pausedTasks);
         } else {
@@ -124,10 +124,29 @@ const lastPausedActivity = async (req, res) => {
 }
 
 
+const checkActivityCompletion = async (req, res) => {
+  const taskID = req.params.taskID;
+
+  try {
+      const completedTask = await Completion.findOne({ taskID:taskID, complete_score:3 });
+      if (completedTask) {
+          return res.json(true);
+      } else {
+          return res.status(404).send('No such task available');
+      }
+
+  } catch (err) {
+      return res.status(500).send('Internal Server Error')
+  }
+
+}
+
+
   module.exports = {
     create,
     getCompletionById,
     updateCompletion,
     deleteTaskCompletion,
-    lastPausedActivity
+    lastPausedActivity,
+    checkActivityCompletion
   };
