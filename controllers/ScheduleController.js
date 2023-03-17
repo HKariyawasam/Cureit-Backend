@@ -331,6 +331,54 @@ const updateScheduleWithTaskDelete = async (req, res) => {
   }
 };
 
+
+
+const remainingActivityTimeOfRoutine = async (req, res) => {
+  const userID = req.params.userID;
+  const date = req.params.date;
+
+  try {
+    let schedule = await Schedule.findOne({
+      userID: userID,date:date
+    });
+    if (schedule) {
+      let tasksArray = schedule.tasks; 
+      let remainingTotal = 0
+
+      await Promise.all(tasksArray.map(async (task) => {
+        let taskObj = await Task.findOne({ taskID: task });
+        if (taskObj) {
+          if(taskObj.complete_score != 3){
+            remainingTotal = remainingTotal + parseInt(taskObj.duration);
+          }   
+        }else {
+          return res.status(500).send("No tasks");
+        }
+      }))
+
+    let routineTotalTime = 20
+
+    let difference = routineTotalTime -remainingTotal
+
+    let timeObj = {
+      activitiesTime : remainingTotal,
+      extraTime:difference
+    }
+    return res.json(timeObj);
+
+      
+    
+    }else{
+      return res.status(500).send("No schedule");
+    }
+  } catch (err) {
+    return res.status(500).send("Internal Server Error");
+  }
+};
+
+
+
+
 module.exports = {
   create,
   getAllScheduleUser,
@@ -338,5 +386,6 @@ module.exports = {
   searchSchedule,
   updateSchedule,
   updateScheduleWithUpdateTask,
-  updateScheduleWithTaskDelete
+  updateScheduleWithTaskDelete,
+  remainingActivityTimeOfRoutine
 };

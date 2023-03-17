@@ -9,6 +9,7 @@ router.post('/create', scheduleController.create);
 router.get('/:scheduleID', scheduleController.searchSchedule);
 router.get('/schedule/:userID', scheduleController.getAllScheduleUser);
 router.get('/:userID/:date', scheduleController.getOneUserSchedulePerDate);
+router.get('/times/:userID/:date', scheduleController.remainingActivityTimeOfRoutine);
 router.put('/:scheduleID', scheduleController.updateSchedule);
 router.put('/schedule/:scheduleID', scheduleController.updateScheduleWithUpdateTask);
 router.put('/schedule/deleteTask/:scheduleID/:taskID', scheduleController.updateScheduleWithTaskDelete);
